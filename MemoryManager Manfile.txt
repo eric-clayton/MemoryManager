@@ -1,0 +1,51 @@
+.TH MemoryManager.txt
+.SH Name
+P2: Memory Management & Layering
+.SH Synopsis
+The goal of P2 was to implement a memory manager that maintained a bitmap of allocated words and a list of free holes.
+.SH Description
+.nf
+MemoryManager/MemoryManager.h
+.RS
+This file contains the declarations of all the the functions used in MemoryManager.cpp which includes the two allocator functions 5 helper functions and the MemoryManager class.
+For the MemoryManager class I had unsigned wordSize to hold the size of the words, size_t sizeInWords to hold the size of the memory in words, unsigned memoryLimit to hold the size of the memory in bytes,
+char* memory as the memory block, function<int(int,void*)> allocator to hold the current allocator function. list<uint16_t> freeList to hold the memory holes, unsigned char* bitMap to hold the bitMap, and 
+finally an unordered_map<int, int> allocated size to store the size of each allocated block with offset as the key and size as the value.
+MemoryManager has 5 helper functions in addition to the required class functions. They include: list<uint16_t>::iterator findIt(int offset) which takes in an offset and finds the iterator to that offset in the free list using binary search, void insertList(int offset, numWords)
+which is called in allocate to update the free list, void removeList(int offset, int numWords) which is called in free to update the list, void setBitmap(int offset, int numWords) which updates the bitMap in allocate, and finally void freeBitMap(int offset, numWords) which updates the bitMap in free.
+.RE
+.PP
+.nf
+MemoryManager/MemoryManager.cpp
+.RS
+MemoryManager.cpp contains all the definitions of the functions from MemoryManager.h.
+shutdown() deletes any long term storage relating to the MemoryManager, since bitMap is stored in a dynamic unsigned char array it is freed along with memory and freeList and allocatedSize call the clear() function to reset them to be used again. Initialize calls shutdown and then sets up 
+long term storage of memory, bitMap and freeList. bitMap is intialized with the size in the first 2 bytes and freeList is intialized with a hole of one that is the entire size of the memory. When getList() is called a helper function converts freeList to array that may be deleted after it is called. 
+getBitmap() creates a copy of the bitMap so that long term storage is not affected. I chose to use a list data structure for the free list do I could add and remove elements as allocate and free were called. 
+removeList() uses a bunch of manipulations on freeList iterators to find whether holes need to be combined or not. dumpMemoryMap() uses the POSIX calls creat, open, and write to write to file. 
+The helper functions count_digit, intStack, getSize and arrToCharArr are used to create the char buffer from freeList to write to the file.
+.RE
+.PP
+.nf
+.SH TESTING
+.nf
+I ran CommandLine.cpp by using this command:
+c++ -std=c++17 -o program_name Commandline.cpp -L ./MemoryManager -lMemoryManager
+./program_name
+I got 38/38 on the score.
+I installed valgrind on ubuntu then ran:
+valgrind ./program_name
+valgrind reported I had zero memory leaks.
+.RE
+.PP
+.SH BUGS
+No known bugs.
+.SH LINK
+https://www.youtube.com/watch?v=4pVzF6lB2Do
+.SH REFERENCES/CITATIONS
+.nf
+https://developer.ibm.com/tutorials/au-memorymanager/
+https://www.cs.rit.edu/~ark/lectures/gc/03_00_00.html
+https://en.cppreference.com/w/cpp/utility/functional/function
+.SH AUTHOR
+Eric Clayton
